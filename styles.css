@@ -265,9 +265,16 @@ button { font: inherit; cursor: pointer; }
   color: var(--ink);
 }
 .nav__brand:hover { color: var(--ink); }
-.nav__mark {
-  display: inline-flex; align-items: center; justify-content: center;
-  color: var(--accent);
+.brand-logo {
+  display: block;
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.brand-logo--nav   { height: 36px; width: auto; }
+.brand-logo--footer { height: 26px; width: auto; }
+@media (max-width: 720px) {
+  .brand-logo--nav { height: 30px; }
 }
 .nav__wordmark span {
   color: var(--ink-muted);
@@ -388,24 +395,24 @@ button { font: inherit; cursor: pointer; }
 }
 .hero__stack .hero__card--front {
   z-index: 2;
-  transform: translate(0, 0) rotate(0);
+  transform: translate(0, 0);
 }
 .hero__stack .hero__card--back {
   z-index: 1;
-  transform: translate(20px, 24px) rotate(2.4deg);
+  transform: translate(16px, 18px);
   box-shadow: 0 14px 40px -20px rgba(14,26,23,.18);
 }
 .hero__stack:hover .hero__card--front,
 .hero__stack:focus-within .hero__card--front,
 .hero__stack.is-flipped .hero__card--front {
-  transform: translate(20px, 24px) rotate(2.4deg);
+  transform: translate(16px, 18px);
   z-index: 1;
   box-shadow: 0 14px 40px -20px rgba(14,26,23,.18);
 }
 .hero__stack:hover .hero__card--back,
 .hero__stack:focus-within .hero__card--back,
 .hero__stack.is-flipped .hero__card--back {
-  transform: translate(0, 0) rotate(0);
+  transform: translate(0, 0);
   z-index: 2;
   box-shadow: 0 1px 0 rgba(14,26,23,.02), 0 12px 32px -16px rgba(14,26,23,.10);
 }
