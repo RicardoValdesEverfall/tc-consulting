@@ -4,26 +4,26 @@
               + HashiCorp (confident dark CTA bands)
               + power-design (modular scale 1.25, 8pt grid, 60-30-10 color,
                 single accent, ≥40% whitespace, WCAG AA+ contrast).
-   Palette: cool off-white canvas + near-black navy ink + editorial navy accent.
+   Palette: warm off-white canvas + near-black forest ink + deep-emerald accent.
    ──────────────────────────────────────────────────────────────────────── */
 
 :root {
   /* 60-30-10 color split
      60% canvas / soft surfaces · 30% ink (text + UI) · 10% accent (amber) */
-  --canvas:         #f7f8fb;   /* cool off-white, the 60% */
-  --canvas-soft:    #eef1f6;   /* soft slate-tinted, alt sections */
+  --canvas:         #f7f8f4;   /* warm off-white, the 60% */
+  --canvas-soft:    #edefe8;   /* soft sage-tinted, alt sections */
   --canvas-elev:    #ffffff;   /* card surfaces */
-  --ink:            #0c1424;   /* near-black w/ navy undertone */
-  --ink-2:          #1f2a44;
-  --ink-muted:      #56627a;
-  --ink-subtle:     #8a93a8;
-  --hairline:       #dde3ee;
-  --hairline-soft:  #ebeff6;
-  --deep-navy:     #0a1a3d;   /* midnight navy — dark CTA band */
-  --deep-navy-2:   #061230;
-  --accent:         #2a52a5;   /* editorial navy blue — the 10% accent */
-  --accent-hover:   #1f3f80;
-  --accent-soft:    #dde6f3;
+  --ink:            #0c1814;   /* near-black w/ forest undertone */
+  --ink-2:          #1f2a26;
+  --ink-muted:      #566863;
+  --ink-subtle:     #8a948f;
+  --hairline:       #dde3dc;
+  --hairline-soft:  #ebefe9;
+  --deep-navy:      #0a2820;   /* deep forest — dark CTA band (token name kept for stability) */
+  --deep-navy-2:    #061a14;
+  --accent:         #1d4a3e;   /* editorial deep emerald — the 10% accent */
+  --accent-hover:   #143a2f;
+  --accent-soft:    #d8e8e1;
 
   /* Type — modular scale 1.25, base 16, snapped to 8-friendly values */
   --t-12: 12px;
@@ -338,7 +338,7 @@ button { font: inherit; cursor: pointer; }
   content: "";
   position: absolute; inset: 0; pointer-events: none;
   background:
-    radial-gradient(60% 50% at 12% 0%, rgba(42,82,165,.10), transparent 60%),
+    radial-gradient(60% 50% at 12% 0%, rgba(29,74,62,.10), transparent 60%),
     radial-gradient(50% 40% at 88% 0%, rgba(0,60,51,.07), transparent 60%);
 }
 .hero__grid {
@@ -513,7 +513,7 @@ button { font: inherit; cursor: pointer; }
 
 .promo {
   background:
-    linear-gradient(180deg, rgba(42,82,165,.10), rgba(42,82,165,.04)),
+    linear-gradient(180deg, rgba(29,74,62,.10), rgba(29,74,62,.04)),
     var(--canvas);
   border-top: 1px solid var(--hairline);
   border-bottom: 1px solid var(--hairline);
@@ -525,7 +525,7 @@ button { font: inherit; cursor: pointer; }
   content: "";
   position: absolute; inset: 0;
   background:
-    radial-gradient(40% 80% at 90% 50%, rgba(42,82,165,.18), transparent 70%),
+    radial-gradient(40% 80% at 90% 50%, rgba(29,74,62,.18), transparent 70%),
     radial-gradient(40% 80% at 10% 50%, rgba(0,60,51,.06), transparent 70%);
   pointer-events: none;
 }
@@ -549,13 +549,13 @@ button { font: inherit; cursor: pointer; }
 .promo__dot {
   width: 7px; height: 7px; border-radius: 999px;
   background: var(--accent);
-  box-shadow: 0 0 0 0 rgba(42,82,165,.6);
+  box-shadow: 0 0 0 0 rgba(29,74,62,.6);
   animation: promoPulse 2.4s var(--ease) infinite;
 }
 @keyframes promoPulse {
-  0%   { box-shadow: 0 0 0 0 rgba(42,82,165,.6); }
-  70%  { box-shadow: 0 0 0 10px rgba(42,82,165,0); }
-  100% { box-shadow: 0 0 0 0 rgba(42,82,165,0); }
+  0%   { box-shadow: 0 0 0 0 rgba(29,74,62,.6); }
+  70%  { box-shadow: 0 0 0 10px rgba(29,74,62,0); }
+  100% { box-shadow: 0 0 0 0 rgba(29,74,62,0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .promo__dot { animation: none; }
@@ -890,7 +890,7 @@ button { font: inherit; cursor: pointer; }
 
 .cta {
   background:
-    radial-gradient(60% 60% at 50% 0%, rgba(42,82,165,.18), transparent 70%),
+    radial-gradient(60% 60% at 50% 0%, rgba(29,74,62,.18), transparent 70%),
     var(--deep-navy);
   color: #fff;
   padding: clamp(80px, 10vw, 144px) 0;

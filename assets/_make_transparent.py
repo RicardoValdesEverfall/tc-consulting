@@ -7,7 +7,7 @@ from pathlib import Path
 SRC = Path(__file__).parent / "logo-concept-nano.png"
 OUT = Path(__file__).parent / "logo.png"
 
-BRAND = (10, 26, 61, 255)        # site --deep-navy #0a1a3d
+BRAND = (10, 40, 32, 255)        # site --deep-navy token (now forest) #0a2820
 LUM_BG_THRESHOLD = 200           # pixels above this luminance => background
 LUM_FG_THRESHOLD = 120           # pixels below this => recolor to brand navy
 
