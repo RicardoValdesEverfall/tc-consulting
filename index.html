@@ -33,11 +33,12 @@
         <a href="#about">About</a>
         <a href="#approach">Approach</a>
         <a href="#faq">FAQ</a>
+        <a href="#book">Book</a>
       </nav>
 
       <div class="nav__cta">
         <a class="btn btn--ghost" href="mailto:info@tccgroup.ca">Email us</a>
-        <a class="btn btn--primary" href="#contact">Book a call</a>
+        <a class="btn btn--primary" href="#book">Book a call</a>
       </div>
 
       <button class="nav__menu" aria-label="Open menu" aria-expanded="false" data-menu-toggle>
@@ -61,7 +62,7 @@
             We help Canadian business owners write plans that investors and lenders take seriously, build cashflow projections that survive scrutiny, and shortlist the funding programs most likely to say yes.
           </p>
           <div class="hero__cta">
-            <a class="btn btn--primary btn--lg" href="#contact">
+            <a class="btn btn--primary btn--lg" href="#book">
               Book a free 30-min discovery call
               <span class="btn__badge">Free</span>
             </a>
@@ -346,16 +347,65 @@
       </div>
     </section>
 
+    <!-- ─── BOOKING CALENDAR ────────────────────────────────────────────── -->
+    <section class="section" id="book">
+      <div class="container booker">
+        <header class="booker__head">
+          <p class="eyebrow">Book a call</p>
+          <h2 class="display-md">Pick a time that works.</h2>
+          <p class="section__lede">A free 30-minute discovery call by Google Meet or Zoom. Book at least one week ahead. Weekdays only. All times Eastern.</p>
+        </header>
+
+        <div class="booker__grid">
+          <div class="booker__cal" data-calendar>
+            <div class="booker__nav">
+              <button class="booker__navbtn" data-cal-prev aria-label="Previous month" type="button">&lsaquo;</button>
+              <span class="booker__month" data-cal-month aria-live="polite"></span>
+              <button class="booker__navbtn" data-cal-next aria-label="Next month" type="button">&rsaquo;</button>
+            </div>
+            <div class="booker__dow" aria-hidden="true">
+              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            </div>
+            <div class="booker__days" data-cal-days role="grid" aria-label="Available booking dates"></div>
+            <p class="booker__hint">Hover or tap an available day to see times. Click a time to send a request.</p>
+          </div>
+
+          <aside class="booker__side">
+            <div class="booker__panel">
+              <p class="mono-label">What you get</p>
+              <ul class="booker__list">
+                <li>30 minutes by Google Meet or Zoom</li>
+                <li>No obligation, no pitch</li>
+                <li>Bring your numbers, or bring nothing</li>
+              </ul>
+            </div>
+            <div class="booker__panel">
+              <p class="mono-label">Times offered</p>
+              <ul class="booker__list">
+                <li>9:00 AM &ndash; 9:30 AM</li>
+                <li>11:30 AM &ndash; 12:00 PM</li>
+                <li>2:00 PM &ndash; 2:30 PM</li>
+                <li>4:30 PM &ndash; 5:00 PM</li>
+              </ul>
+            </div>
+            <div class="booker__panel booker__panel--note">
+              <p>Same-week bookings aren't available. Please pick a date at least one week from today. Weekends are unavailable.</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
     <!-- ─── FINAL CTA ───────────────────────────────────────────────────── -->
     <section class="cta" id="contact">
       <div class="container cta__inner">
-        <p class="eyebrow eyebrow--on-dark">Let's talk</p>
-        <h2 class="cta__title">Tell us where you are. We'll tell you what's possible.</h2>
-        <p class="cta__lede">A free 30-minute discovery call with no obligation, no decks, and no pitch. It's how both of us figure out which financing routes actually fit your situation. Bring your most recent financials if you have them; bring nothing if you don't.</p>
+        <p class="eyebrow eyebrow--on-dark">Prefer email?</p>
+        <h2 class="cta__title">Or just send us a note.</h2>
+        <p class="cta__lede">If none of the calendar times work, or you'd rather kick things off in writing, send us an email and we'll come back to you within one business day.</p>
         <div class="cta__actions">
           <a class="btn btn--accent btn--lg" href="mailto:info@tccgroup.ca?subject=Discovery%20call">info@tccgroup.ca</a>
         </div>
-        <p class="cta__note">Replies within one business day. Discovery calls usually booked within a week.</p>
+        <p class="cta__note">Bring your most recent financials if you have them; bring nothing if you don't.</p>
       </div>
     </section>
 
@@ -373,6 +423,7 @@
         <a href="#about">About</a>
         <a href="#approach">Approach</a>
         <a href="#faq">FAQ</a>
+        <a href="#book">Book</a>
         <a href="mailto:info@tccgroup.ca">Email</a>
       </nav>
       <p class="footer__legal">
