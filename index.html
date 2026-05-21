@@ -432,6 +432,61 @@
     </div>
   </footer>
 
+  <!-- Booking modal (hidden by default; opened from calendar slot click) -->
+  <div class="bookmodal" id="bookmodal" hidden role="dialog" aria-modal="true" aria-labelledby="bookmodal__title">
+    <div class="bookmodal__backdrop" data-bm-close></div>
+    <div class="bookmodal__card" role="document">
+      <button type="button" class="bookmodal__close" data-bm-close aria-label="Close booking form">&times;</button>
+
+      <header class="bookmodal__head">
+        <p class="mono-label">Book a call</p>
+        <h2 class="bookmodal__title" id="bookmodal__title" data-bm-when>—</h2>
+        <p class="bookmodal__sub">Free 30-minute discovery call by Google Meet or Zoom.</p>
+      </header>
+
+      <form class="bookmodal__form" data-bm-form novalidate>
+        <div class="bookmodal__row">
+          <label>
+            <span class="bookmodal__label">Your name</span>
+            <input name="name" type="text" required autocomplete="name" maxlength="120" />
+          </label>
+          <label>
+            <span class="bookmodal__label">Business name</span>
+            <input name="business" type="text" required autocomplete="organization" maxlength="160" />
+          </label>
+        </div>
+        <div class="bookmodal__row">
+          <label>
+            <span class="bookmodal__label">Email</span>
+            <input name="email" type="email" required autocomplete="email" maxlength="254" />
+          </label>
+          <label>
+            <span class="bookmodal__label">Phone</span>
+            <input name="phone" type="tel" required autocomplete="tel" maxlength="40" />
+          </label>
+        </div>
+        <label>
+          <span class="bookmodal__label">What would you like to discuss?</span>
+          <textarea name="description" required rows="4" maxlength="2000" placeholder="A few lines about your business and what you'd like to talk about."></textarea>
+        </label>
+
+        <p class="bookmodal__error" data-bm-error hidden></p>
+
+        <div class="bookmodal__actions">
+          <button type="button" class="btn btn--ghost" data-bm-close>Cancel</button>
+          <button type="submit" class="btn btn--primary" data-bm-submit>Confirm booking</button>
+        </div>
+      </form>
+
+      <div class="bookmodal__success" data-bm-success hidden>
+        <p class="bookmodal__check" aria-hidden="true">&check;</p>
+        <h3 class="bookmodal__title">Booking confirmed</h3>
+        <p class="bookmodal__sub">A confirmation has been emailed to you. Ricardo will follow up shortly with a meeting link.</p>
+        <button type="button" class="btn btn--primary" data-bm-close>Close</button>
+      </div>
+    </div>
+  </div>
+
   <script src="script.js" defer></script>
 </body>
 </html>

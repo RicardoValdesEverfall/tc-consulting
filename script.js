@@ -42,13 +42,15 @@
   // ── Booking calendar ─────────────────────────────────────────────────
   const calRoot = document.querySelector("[data-calendar]");
   if (calRoot) {
+    // TODO after Vercel deploy: replace with actual API origin (e.g. https://tc-consulting-api.vercel.app)
+    const API_BASE = "https://tc-consulting-api.vercel.app";
+
     const SLOTS = [
       { label: "9:00 AM",  start: "09:00", end: "09:30" },
       { label: "11:30 AM", start: "11:30", end: "12:00" },
       { label: "2:00 PM",  start: "14:00", end: "14:30" },
       { label: "4:30 PM",  start: "16:30", end: "17:00" },
     ];
-    const BOOKING_EMAIL = "info@tccgroup.ca";
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -63,26 +65,28 @@
     const prevBtn = calRoot.querySelector("[data-cal-prev]");
     const nextBtn = calRoot.querySelector("[data-cal-next]");
 
+    // Taken slots loaded from API: "YYYY-MM-DD:HH:MM"
+    let takenSlots = new Set();
+
     const isWeekend = (d) => d.getDay() === 0 || d.getDay() === 6;
-    const isAvailable = (d) => d.getTime() >= earliestBookable.getTime() && !isWeekend(d);
+    const ymd = (d) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    };
+    const isSlotTaken = (d, slotStart) => takenSlots.has(`${ymd(d)}:${slotStart}`);
+    const allSlotsTaken = (d) => SLOTS.every((s) => isSlotTaken(d, s.start));
+    const isAvailable = (d) =>
+      d.getTime() >= earliestBookable.getTime() &&
+      !isWeekend(d) &&
+      !allSlotsTaken(d);
     const formatDate = (d) => d.toLocaleDateString("en-CA", {
       weekday: "long", year: "numeric", month: "long", day: "numeric",
     });
 
-    function bookSlot(date, slot) {
-      const subject = `Discovery call request: ${formatDate(date)} at ${slot.label}`;
-      const body =
-        `Hi Ricardo,\n\n` +
-        `I'd like to book a free 30-minute discovery call on ${formatDate(date)} at ${slot.label} Eastern (${slot.start}-${slot.end}).\n\n` +
-        `A bit about my business and what I'd like to discuss:\n\n\n` +
-        `Thanks,\n`;
-      window.location.href =
-        `mailto:${BOOKING_EMAIL}` +
-        `?subject=${encodeURIComponent(subject)}` +
-        `&body=${encodeURIComponent(body)}`;
-    }
-
     let activeCell = null;
+    let pendingBooking = null; // { date, slot }
 
     function closeSlots() {
       if (!activeCell) return;
@@ -108,11 +112,18 @@
         btn.type = "button";
         btn.className = "booker__slot";
         btn.setAttribute("role", "menuitem");
-        btn.textContent = slot.label;
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          bookSlot(date, slot);
-        });
+        if (isSlotTaken(date, slot.start)) {
+          btn.classList.add("booker__slot--taken");
+          btn.disabled = true;
+          btn.textContent = `${slot.label} (booked)`;
+        } else {
+          btn.textContent = slot.label;
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            closeSlots();
+            openBookingModal(date, slot);
+          });
+        }
         popover.appendChild(btn);
       });
       cell.appendChild(popover);
@@ -200,7 +211,137 @@
       if (e.key === "Escape") closeSlots();
     });
 
+    // ── Modal wiring ────────────────────────────────────────────────────
+    const modal = document.getElementById("bookmodal");
+    const modalForm = modal ? modal.querySelector("[data-bm-form]") : null;
+    const modalWhen = modal ? modal.querySelector("[data-bm-when]") : null;
+    const modalError = modal ? modal.querySelector("[data-bm-error]") : null;
+    const modalSubmit = modal ? modal.querySelector("[data-bm-submit]") : null;
+    const modalSuccess = modal ? modal.querySelector("[data-bm-success]") : null;
+
+    function openBookingModal(date, slot) {
+      if (!modal) return;
+      pendingBooking = { date, slot };
+      modalWhen.textContent = `${formatDate(date)} at ${slot.label} Eastern`;
+      modalForm.hidden = false;
+      modalSuccess.hidden = true;
+      modalError.hidden = true;
+      modal.hidden = false;
+      document.body.style.overflow = "hidden";
+      setTimeout(() => {
+        const firstInput = modalForm.querySelector("input[name='name']");
+        if (firstInput) firstInput.focus();
+      }, 50);
+    }
+
+    function closeBookingModal() {
+      if (!modal) return;
+      modal.hidden = true;
+      document.body.style.overflow = "";
+      pendingBooking = null;
+      if (modalForm) {
+        modalForm.reset();
+        modalForm.hidden = false;
+      }
+      if (modalSuccess) modalSuccess.hidden = true;
+      if (modalError) modalError.hidden = true;
+      if (modalSubmit) {
+        modalSubmit.disabled = false;
+        modalSubmit.textContent = "Confirm booking";
+      }
+    }
+
+    function errorMessage(code) {
+      switch (code) {
+        case "slot_taken":         return "That slot was just booked by someone else. Please pick another time.";
+        case "missing_fields":     return "Please fill in all fields.";
+        case "invalid_email":      return "That email address doesn't look valid.";
+        case "invalid_date":       return "Invalid date selected.";
+        case "invalid_slot":       return "Invalid time slot.";
+        case "too_soon":           return "Bookings need to be at least one week ahead.";
+        case "weekend_not_allowed":return "Weekends aren't available.";
+        case "email_send_failed":  return "Saved your booking, but the confirmation email failed to send. Ricardo will reach out directly.";
+        default:                   return "Something went wrong. Please try again, or email info@tccgroup.ca.";
+      }
+    }
+
+    if (modal) {
+      modal.querySelectorAll("[data-bm-close]").forEach((el) => {
+        el.addEventListener("click", closeBookingModal);
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !modal.hidden) closeBookingModal();
+      });
+    }
+
+    if (modalForm) {
+      modalForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (!pendingBooking) return;
+
+        modalError.hidden = true;
+        modalSubmit.disabled = true;
+        modalSubmit.textContent = "Sending…";
+
+        const fd = new FormData(modalForm);
+        const payload = {
+          name: (fd.get("name") || "").toString().trim(),
+          business: (fd.get("business") || "").toString().trim(),
+          email: (fd.get("email") || "").toString().trim(),
+          phone: (fd.get("phone") || "").toString().trim(),
+          description: (fd.get("description") || "").toString().trim(),
+          date: ymd(pendingBooking.date),
+          slot: pendingBooking.slot.start,
+        };
+
+        try {
+          const r = await fetch(`${API_BASE}/api/book`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await r.json().catch(() => ({}));
+
+          if (r.ok) {
+            takenSlots.add(`${payload.date}:${payload.slot}`);
+            modalForm.hidden = true;
+            modalSuccess.hidden = false;
+            render();
+          } else {
+            modalError.textContent = errorMessage(data.error);
+            modalError.hidden = false;
+            modalSubmit.disabled = false;
+            modalSubmit.textContent = "Confirm booking";
+            if (data.error === "slot_taken") {
+              takenSlots.add(`${payload.date}:${payload.slot}`);
+              render();
+            }
+          }
+        } catch (err) {
+          modalError.textContent = "Couldn't reach the booking server. Please email info@tccgroup.ca and we'll book by hand.";
+          modalError.hidden = false;
+          modalSubmit.disabled = false;
+          modalSubmit.textContent = "Confirm booking";
+        }
+      });
+    }
+
+    // ── Availability fetch ──────────────────────────────────────────────
+    async function loadAvailability() {
+      try {
+        const r = await fetch(`${API_BASE}/api/availability`, { method: "GET" });
+        if (!r.ok) return;
+        const data = await r.json();
+        takenSlots = new Set(data.taken || []);
+        render();
+      } catch (e) {
+        // Network/CORS error: proceed without availability info (open slots
+        // will still be validated server-side before booking)
+      }
+    }
+
     render();
+    loadAvailability();
   }
 
   // ── Reveal on scroll: opt-in via [data-reveal] attribute ─────────────
