@@ -973,7 +973,7 @@ button { font: inherit; cursor: pointer; }
      shifts that tint from amber/sepia (~30°) to brand emerald (~150°).
      Cleaner than re-encoding the image. */
   filter: grayscale(100%) sepia(45%) hue-rotate(105deg) saturate(1.1) brightness(1.0) contrast(1.1);
-  opacity: 0.12;
+  opacity: 0.08;
   z-index: 0;
   pointer-events: none;
 }
