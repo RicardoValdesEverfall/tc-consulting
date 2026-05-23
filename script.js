@@ -34,6 +34,8 @@
   // ── Hero card stack: dot-pagination controls the active card ──
   const stack = document.querySelector("[data-stack]");
   const dotsRoot = document.querySelector("[data-stack-dots]");
+  // Cards in DOM order: [front (engagement 1), back (engagement 2)]
+  const cards = stack ? Array.from(stack.querySelectorAll(".hero__card")) : [];
   if (stack && dotsRoot) {
     const dots = Array.from(dotsRoot.querySelectorAll(".hero__dot"));
     const setActive = (idx) => {
@@ -44,7 +46,17 @@
         d.classList.toggle("is-active", active);
         d.setAttribute("aria-selected", String(active));
       });
+      // Track which card is currently on top. Tilt + glare only apply to
+      // the active one; clicking an inactive card switches to it.
+      cards.forEach((c, i) => {
+        c.classList.toggle("is-active", i === idx);
+        c.classList.remove("is-tilting");
+        c.style.removeProperty("--rx");
+        c.style.removeProperty("--ry");
+      });
     };
+    setActive(0); // initial state
+
     dots.forEach((dot, i) => {
       dot.addEventListener("click", () => setActive(i));
       dot.addEventListener("keydown", (e) => {
@@ -61,6 +73,13 @@
         }
       });
     });
+
+    // Clicking the inactive (underneath) card switches to it.
+    cards.forEach((card, i) => {
+      card.addEventListener("click", () => {
+        if (!card.classList.contains("is-active")) setActive(i);
+      });
+    });
   }
 
   // ── 3D mouse-tracked tilt on engagement cards (desktop, fine-pointer only) ──
@@ -73,7 +92,6 @@
 
   if (stack && fineHover && wideEnough && !reducedMotion) {
     const MAX_TILT = 10;      // degrees on either axis at the corner of the card
-    const cards = stack.querySelectorAll(".hero__card");
 
     cards.forEach((card) => {
       let rafId = 0;
@@ -81,12 +99,12 @@
 
       const applyTilt = () => {
         rafId = 0;
-        if (!pendingEvent) return;
+        if (!pendingEvent || !card.classList.contains("is-active")) return;
         const rect = card.getBoundingClientRect();
         const x = (pendingEvent.clientX - rect.left) / rect.width;  // 0..1
         const y = (pendingEvent.clientY - rect.top) / rect.height;  // 0..1
-        const ry = (x - 0.5) * 2 * MAX_TILT;  // mouse right → tilt right
-        const rx = (0.5 - y) * 2 * MAX_TILT;  // mouse down → tilt down
+        const ry = (x - 0.5) * 2 * MAX_TILT;
+        const rx = (0.5 - y) * 2 * MAX_TILT;
         card.style.setProperty("--rx", `${rx.toFixed(2)}deg`);
         card.style.setProperty("--ry", `${ry.toFixed(2)}deg`);
         card.style.setProperty("--mx", `${(x * 100).toFixed(1)}%`);
@@ -95,17 +113,20 @@
       };
 
       card.addEventListener("mouseenter", () => {
+        if (!card.classList.contains("is-active")) return;
         card.classList.add("is-tilting");
       });
       card.addEventListener("mousemove", (e) => {
+        if (!card.classList.contains("is-active")) return;
         pendingEvent = e;
         if (!rafId) rafId = requestAnimationFrame(applyTilt);
       });
       card.addEventListener("mouseleave", () => {
         card.classList.remove("is-tilting");
         if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
-        card.style.setProperty("--rx", "0deg");
-        card.style.setProperty("--ry", "0deg");
+        // Clear inline overrides so the CSS default resting tilt reapplies
+        card.style.removeProperty("--rx");
+        card.style.removeProperty("--ry");
       });
     });
   }
