@@ -419,12 +419,16 @@ button { font: inherit; cursor: pointer; }
   display: inline-block;
 }
 
-/* Hero card stack — two engagement snapshots, hover/focus to swap */
+/* Hero card stack — two engagement snapshots, hover/focus to swap.
+   On desktop, JS adds a mouse-tracked 3D tilt; CSS variables coordinate:
+   --tx/--ty drive the swap offset, --rx/--ry drive the live tilt rotation,
+   --mx/--my position the glare highlight. */
 .hero__stack {
   position: relative;
   isolation: isolate;
   display: grid;
   grid-template-columns: 1fr;
+  perspective: 1200px;
 }
 .hero__card {
   background: var(--canvas-elev);
@@ -432,37 +436,91 @@ button { font: inherit; cursor: pointer; }
   border-radius: var(--r-lg);
   padding: var(--s-32);
   box-shadow: 0 1px 0 rgba(14,26,23,.02), 0 12px 32px -16px rgba(14,26,23,.10);
+  position: relative;
 }
 .hero__stack > .hero__card {
   /* Both cards occupy the same grid cell — height equalizes to the taller card */
   grid-row: 1;
   grid-column: 1;
-  transition: transform .45s var(--ease), box-shadow .45s var(--ease);
   cursor: pointer;
   will-change: transform;
+  transform-style: preserve-3d;
+  --tx: 0px;
+  --ty: 0px;
+  --rx: 0deg;
+  --ry: 0deg;
+  transform:
+    translate3d(var(--tx), var(--ty), 0)
+    rotateX(var(--rx))
+    rotateY(var(--ry));
+  transition:
+    transform .45s var(--ease),
+    box-shadow .45s var(--ease);
 }
-.hero__stack .hero__card--front {
-  z-index: 2;
-  transform: translate(0, 0);
+/* While JS tilt is active, move much faster than the swap easing */
+.hero__stack > .hero__card.is-tilting {
+  transition:
+    transform .08s var(--ease),
+    box-shadow .45s var(--ease);
 }
+.hero__stack .hero__card--front { z-index: 2; }
 .hero__stack .hero__card--back {
   z-index: 1;
-  transform: translate(16px, 18px);
+  --tx: 16px;
+  --ty: 18px;
   box-shadow: 0 14px 40px -20px rgba(14,26,23,.18);
 }
 .hero__stack:hover .hero__card--front,
 .hero__stack:focus-within .hero__card--front,
 .hero__stack.is-flipped .hero__card--front {
-  transform: translate(16px, 18px);
+  --tx: 16px;
+  --ty: 18px;
   z-index: 1;
   box-shadow: 0 14px 40px -20px rgba(14,26,23,.18);
 }
 .hero__stack:hover .hero__card--back,
 .hero__stack:focus-within .hero__card--back,
 .hero__stack.is-flipped .hero__card--back {
-  transform: translate(0, 0);
+  --tx: 0px;
+  --ty: 0px;
   z-index: 2;
   box-shadow: 0 1px 0 rgba(14,26,23,.02), 0 12px 32px -16px rgba(14,26,23,.10);
+}
+
+/* Glare layer — only appears while card is being tilted */
+.hero__card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    320px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, 0.20),
+    transparent 60%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s var(--ease);
+  z-index: 0;
+}
+.hero__card.is-tilting::before { opacity: 1; }
+.hero__card > * { position: relative; z-index: 1; }
+
+/* Disable 3D tilt on touch devices and below 960px — the tilt feels
+   jittery without a precise pointer and the cards stack vertically anyway.
+   The swap interaction (translate offset) still works on all screens. */
+@media (hover: none), (max-width: 960px) {
+  .hero__stack { perspective: none; }
+  .hero__stack > .hero__card { transform-style: flat; }
+  .hero__card::before { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__stack > .hero__card.is-tilting {
+    /* Strip rotation/glare for users who opt out of motion */
+    transform: translate3d(var(--tx), var(--ty), 0);
+  }
+  .hero__card::before { display: none; }
 }
 .card__breakdown {
   margin-top: var(--s-16);
@@ -845,6 +903,23 @@ button { font: inherit; cursor: pointer; }
 /* ────────────────────────────────────────────────────────────────────────
    ABOUT
    ──────────────────────────────────────────────────────────────────────── */
+
+/* Ambient Ottawa city map behind the About section. Desaturated + sepia-warmed
+   to blend with the brand palette, very low opacity so it reads as texture
+   rather than imagery. The pseudo-element is absolutely positioned and the
+   container is pushed above it via z-index. */
+#about { position: relative; overflow: hidden; }
+#about::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("assets/ottawa-map.webp") center / cover no-repeat;
+  filter: grayscale(100%) sepia(25%) brightness(1.05) contrast(1.1);
+  opacity: 0.07;
+  z-index: 0;
+  pointer-events: none;
+}
+#about > .container { position: relative; z-index: 1; }
 
 .about__head {
   max-width: var(--container-narrow);

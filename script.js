@@ -39,6 +39,53 @@
     });
   }
 
+  // ── 3D mouse-tracked tilt on engagement cards (desktop, fine-pointer only) ──
+  // The cards already swap on hover (CSS via --tx/--ty); JS adds rotation via
+  // --rx/--ry and positions the glare highlight via --mx/--my. CSS handles
+  // suppression on touch / narrow / reduced-motion.
+  const fineHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  const wideEnough = window.matchMedia("(min-width: 961px)").matches;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (stack && fineHover && wideEnough && !reducedMotion) {
+    const MAX_TILT = 7;       // degrees on either axis at the corner of the card
+    const cards = stack.querySelectorAll(".hero__card");
+
+    cards.forEach((card) => {
+      let rafId = 0;
+      let pendingEvent = null;
+
+      const applyTilt = () => {
+        rafId = 0;
+        if (!pendingEvent) return;
+        const rect = card.getBoundingClientRect();
+        const x = (pendingEvent.clientX - rect.left) / rect.width;  // 0..1
+        const y = (pendingEvent.clientY - rect.top) / rect.height;  // 0..1
+        const ry = (x - 0.5) * 2 * MAX_TILT;  // mouse right → tilt right
+        const rx = (0.5 - y) * 2 * MAX_TILT;  // mouse down → tilt down
+        card.style.setProperty("--rx", `${rx.toFixed(2)}deg`);
+        card.style.setProperty("--ry", `${ry.toFixed(2)}deg`);
+        card.style.setProperty("--mx", `${(x * 100).toFixed(1)}%`);
+        card.style.setProperty("--my", `${(y * 100).toFixed(1)}%`);
+        pendingEvent = null;
+      };
+
+      card.addEventListener("mouseenter", () => {
+        card.classList.add("is-tilting");
+      });
+      card.addEventListener("mousemove", (e) => {
+        pendingEvent = e;
+        if (!rafId) rafId = requestAnimationFrame(applyTilt);
+      });
+      card.addEventListener("mouseleave", () => {
+        card.classList.remove("is-tilting");
+        if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+        card.style.setProperty("--rx", "0deg");
+        card.style.setProperty("--ry", "0deg");
+      });
+    });
+  }
+
   // ── Booking calendar ─────────────────────────────────────────────────
   const calRoot = document.querySelector("[data-calendar]");
   if (calRoot) {
