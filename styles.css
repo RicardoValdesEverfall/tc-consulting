@@ -93,23 +93,35 @@ body {
 }
 
 /* Ambient dots layer — sits behind all content via z-index: -1, drifts very
-   slowly so the page feels alive without being distracting. Disabled for
-   prefers-reduced-motion. */
+   slowly so the page feels alive without being distracting. The mask fades
+   the pattern from densest at top-left to sparsest at the right edge, so
+   the page feels weighted from the headline side and breathes on the right.
+   Disabled for prefers-reduced-motion. */
 .dots-bg {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
   background-image:
-    radial-gradient(circle, rgba(29, 74, 62, 0.10) 1.4px, transparent 1.6px);
-  background-size: 28px 28px;
+    radial-gradient(circle, rgba(29, 74, 62, 0.22) 1.5px, transparent 1.8px);
+  background-size: 22px 22px;
   background-position: 0 0;
+  -webkit-mask-image: radial-gradient(ellipse 130% 95% at top left,
+    rgba(0,0,0,1) 4%,
+    rgba(0,0,0,0.78) 25%,
+    rgba(0,0,0,0.38) 55%,
+    rgba(0,0,0,0.08) 100%);
+          mask-image: radial-gradient(ellipse 130% 95% at top left,
+    rgba(0,0,0,1) 4%,
+    rgba(0,0,0,0.78) 25%,
+    rgba(0,0,0,0.38) 55%,
+    rgba(0,0,0,0.08) 100%);
   animation: dots-drift 90s linear infinite;
   will-change: background-position;
 }
 @keyframes dots-drift {
   from { background-position: 0 0; }
-  to   { background-position: 56px 28px; }
+  to   { background-position: 44px 22px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .dots-bg { animation: none; }
