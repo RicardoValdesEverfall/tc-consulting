@@ -31,11 +31,35 @@
   const year = document.querySelector("[data-year]");
   if (year) year.textContent = String(new Date().getFullYear());
 
-  // ── Hero card stack: click anywhere on it to swap (for touch users) ──
+  // ── Hero card stack: dot-pagination controls the active card ──
   const stack = document.querySelector("[data-stack]");
-  if (stack) {
-    stack.addEventListener("click", () => {
-      stack.classList.toggle("is-flipped");
+  const dotsRoot = document.querySelector("[data-stack-dots]");
+  if (stack && dotsRoot) {
+    const dots = Array.from(dotsRoot.querySelectorAll(".hero__dot"));
+    const setActive = (idx) => {
+      const flipped = idx === 1;
+      stack.classList.toggle("is-flipped", flipped);
+      dots.forEach((d, i) => {
+        const active = i === idx;
+        d.classList.toggle("is-active", active);
+        d.setAttribute("aria-selected", String(active));
+      });
+    };
+    dots.forEach((dot, i) => {
+      dot.addEventListener("click", () => setActive(i));
+      dot.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+          e.preventDefault();
+          const prev = (i - 1 + dots.length) % dots.length;
+          dots[prev].focus();
+          setActive(prev);
+        } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+          e.preventDefault();
+          const next = (i + 1) % dots.length;
+          dots[next].focus();
+          setActive(next);
+        }
+      });
     });
   }
 
@@ -48,7 +72,7 @@
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (stack && fineHover && wideEnough && !reducedMotion) {
-    const MAX_TILT = 7;       // degrees on either axis at the corner of the card
+    const MAX_TILT = 10;      // degrees on either axis at the corner of the card
     const cards = stack.querySelectorAll(".hero__card");
 
     cards.forEach((card) => {

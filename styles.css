@@ -419,27 +419,28 @@ button { font: inherit; cursor: pointer; }
   display: inline-block;
 }
 
-/* Hero card stack — two engagement snapshots, hover/focus to swap.
-   On desktop, JS adds a mouse-tracked 3D tilt; CSS variables coordinate:
-   --tx/--ty drive the swap offset, --rx/--ry drive the live tilt rotation,
-   --mx/--my position the glare highlight. */
+/* Hero card stack — two engagement snapshots paginated via dots below.
+   Each card has real depth: a ::after back-face at translateZ(-22px) gives
+   visible thickness when the card tilts on hover (desktop only). CSS
+   variables coordinate the layered transforms:
+   --tx/--ty drive the stack swap offset, --rx/--ry drive the live tilt
+   rotation, --mx/--my position the glare highlight. */
 .hero__stack {
   position: relative;
   isolation: isolate;
   display: grid;
   grid-template-columns: 1fr;
-  perspective: 1200px;
+  perspective: 1400px;
 }
 .hero__card {
   background: var(--canvas-elev);
   border: 1px solid var(--hairline);
   border-radius: var(--r-lg);
   padding: var(--s-32);
-  box-shadow: 0 1px 0 rgba(14,26,23,.02), 0 12px 32px -16px rgba(14,26,23,.10);
+  box-shadow: 0 1px 0 rgba(14,26,23,.02), 0 16px 36px -16px rgba(14,26,23,.14);
   position: relative;
 }
 .hero__stack > .hero__card {
-  /* Both cards occupy the same grid cell — height equalizes to the taller card */
   grid-row: 1;
   grid-column: 1;
   cursor: pointer;
@@ -457,7 +458,6 @@ button { font: inherit; cursor: pointer; }
     transform .45s var(--ease),
     box-shadow .45s var(--ease);
 }
-/* While JS tilt is active, move much faster than the swap easing */
 .hero__stack > .hero__card.is-tilting {
   transition:
     transform .08s var(--ease),
@@ -468,23 +468,33 @@ button { font: inherit; cursor: pointer; }
   z-index: 1;
   --tx: 16px;
   --ty: 18px;
-  box-shadow: 0 14px 40px -20px rgba(14,26,23,.18);
 }
-.hero__stack:hover .hero__card--front,
-.hero__stack:focus-within .hero__card--front,
 .hero__stack.is-flipped .hero__card--front {
   --tx: 16px;
   --ty: 18px;
   z-index: 1;
-  box-shadow: 0 14px 40px -20px rgba(14,26,23,.18);
 }
-.hero__stack:hover .hero__card--back,
-.hero__stack:focus-within .hero__card--back,
 .hero__stack.is-flipped .hero__card--back {
   --tx: 0px;
   --ty: 0px;
   z-index: 2;
-  box-shadow: 0 1px 0 rgba(14,26,23,.02), 0 12px 32px -16px rgba(14,26,23,.10);
+}
+
+/* Back-face: a duplicate plane translated 22px into Z, with a darker
+   gradient to read as the "thickness" of a physical card. Because the
+   card's transform-style is preserve-3d, the back-face tilts with the
+   card and its edges become visible when the card rotates. */
+.hero__card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(135deg, #d8e2dc 0%, #b8c8c0 50%, #a8bbb1 100%);
+  border: 1px solid #a8b8af;
+  box-shadow: 0 12px 28px -10px rgba(14,26,23,.22);
+  transform: translateZ(-22px);
+  pointer-events: none;
 }
 
 /* Glare layer — only appears while card is being tilted */
@@ -494,30 +504,62 @@ button { font: inherit; cursor: pointer; }
   inset: 0;
   border-radius: inherit;
   background: radial-gradient(
-    320px circle at var(--mx, 50%) var(--my, 50%),
-    rgba(255, 255, 255, 0.20),
+    360px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, 0.22),
     transparent 60%
   );
   opacity: 0;
   pointer-events: none;
   transition: opacity .2s var(--ease);
-  z-index: 0;
+  z-index: 1;
 }
 .hero__card.is-tilting::before { opacity: 1; }
-.hero__card > * { position: relative; z-index: 1; }
+.hero__card > * { position: relative; z-index: 2; }
 
-/* Disable 3D tilt on touch devices and below 960px — the tilt feels
-   jittery without a precise pointer and the cards stack vertically anyway.
-   The swap interaction (translate offset) still works on all screens. */
+/* Dot carousel pagination below the stack */
+.hero__dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--s-12);
+  margin-top: var(--s-32);
+  perspective: none;
+}
+.hero__dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--hairline);
+  cursor: pointer;
+  transition: background .2s var(--ease), transform .2s var(--ease), box-shadow .2s var(--ease);
+}
+.hero__dot:hover:not(.is-active) {
+  background: var(--ink-muted);
+  transform: scale(1.15);
+}
+.hero__dot.is-active {
+  background: var(--accent);
+  transform: scale(1.4);
+  box-shadow: 0 0 0 4px rgba(29, 74, 62, 0.12);
+}
+.hero__dot:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+/* Touch / narrow viewport: flatten the 3D, no thickness, no tilt; dots
+   still paginate. The card-stack swap visual still works. */
 @media (hover: none), (max-width: 960px) {
   .hero__stack { perspective: none; }
   .hero__stack > .hero__card { transform-style: flat; }
+  .hero__card::after,
   .hero__card::before { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .hero__stack > .hero__card.is-tilting {
-    /* Strip rotation/glare for users who opt out of motion */
     transform: translate3d(var(--tx), var(--ty), 0);
   }
   .hero__card::before { display: none; }
@@ -908,14 +950,20 @@ button { font: inherit; cursor: pointer; }
    to blend with the brand palette, very low opacity so it reads as texture
    rather than imagery. The pseudo-element is absolutely positioned and the
    container is pushed above it via z-index. */
-#about { position: relative; overflow: hidden; }
+#about {
+  position: relative;
+  overflow: hidden;
+  /* Opaque canvas background covers the global .dots-bg layer so the map
+     reads cleanly without competing texture in this section only. */
+  background: var(--canvas);
+}
 #about::before {
   content: "";
   position: absolute;
   inset: 0;
   background: url("assets/ottawa-map.webp") center / cover no-repeat;
   filter: grayscale(100%) sepia(25%) brightness(1.05) contrast(1.1);
-  opacity: 0.07;
+  opacity: 0.22;
   z-index: 0;
   pointer-events: none;
 }
